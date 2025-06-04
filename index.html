@@ -1,122 +1,98 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>로또 번호 추출기</title>
-<style>
-  body {
-    font-family: 'Nanum Gothic', sans-serif;
-    background: #f0f8ff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
-  }
-  h1 {
-    color: #2e86de;
-  }
-  #numbers {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    font-weight: bold;
-  }
-  .num {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-    color: white;
-    box-shadow: 0 0 8px rgba(0,0,0,0.15);
-    user-select: none;
-    transition: transform 0.3s ease;
-  }
-  .num.yellow { background: #f1c40f; color: #000; }
-  .num.blue { background: #3498db; }
-  .num.red { background: #e74c3c; }
-  .num.gray { background: #7f8c8d; }
-  .num.green { background: #2ecc71; }
-  button {
-    margin-top: 40px;
-    padding: 12px 25px;
-    font-size: 18px;
-    border: none;
-    border-radius: 30px;
-    background-color: #2e86de;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(46,134,222,0.3);
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #2166b0;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>로또 번호 추출기</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f6fa;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background-color: #2e86de;
+      color: white;
+      padding: 14px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-bottom: 30px;
+    }
+
+    .btn:hover {
+      background-color: #1b4f72;
+    }
+
+    .numbers {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .ball {
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      background-color: #f1c40f;
+      color: white;
+      font-size: 24px;
+      border-radius: 50%;
+      font-weight: bold;
+      opacity: 0;
+      transform: scale(0.5) translateY(20px);
+      animation: pop 0.6s ease-out forwards;
+    }
+
+    @keyframes pop {
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        background-color: #27ae60;
+      }
+    }
+  </style>
 </head>
 <body>
+  <h1>🎉 로또 번호 추출기 🎉</h1>
+  <button class="btn" onclick="generateLotto()">번호 뽑기!</button>
+  <div class="numbers" id="numberContainer"></div>
 
-<h1>🎉 오늘의 로또 번호 추출기 🎉</h1>
-<div id="numbers">
-  <!-- 숫자들이 여기 똥똥똥 나타남 -->
-</div>
-<button id="drawBtn">번호 뽑기!</button>
+  <audio id="popSound" src="pop.mp3" preload="auto"></audio>
 
-<script>
-  const numbersContainer = document.getElementById('numbers');
-  const drawBtn = document.getElementById('drawBtn');
+  <script>
+    function generateLotto() {
+      const container = document.getElementById('numberContainer');
+      const sound = document.getElementById('popSound');
+      container.innerHTML = '';
+      let numbers = new Set();
+      while (numbers.size < 6) {
+        numbers.add(Math.floor(Math.random() * 45) + 1);
+      }
+      const sorted = [...numbers].sort((a, b) => a - b);
 
-  function getNumberColor(num) {
-    if (num >= 1 && num <= 10) return 'yellow';
-    if (num >= 11 && num <= 20) return 'blue';
-    if (num >= 21 && num <= 30) return 'red';
-    if (num >= 31 && num <= 40) return 'gray';
-    if (num >= 41 && num <= 45) return 'green';
-    return '';
-  }
-
-  function generateLottoNumbers() {
-    let nums = new Set();
-    while (nums.size < 6) {
-      nums.add(Math.floor(Math.random() * 45) + 1);
-    }
-    return Array.from(nums).sort((a,b) => a - b);
-  }
-
-  function animateNumbers(nums) {
-    numbersContainer.innerHTML = '';
-    let index = 0;
-
-    function showNext() {
-      if (index >= nums.length) return;
-      const num = nums[index];
-      const span = document.createElement('div');
-      span.classList.add('num', getNumberColor(num));
-      span.textContent = num;
-      span.style.transform = 'scale(0)';
-      numbersContainer.appendChild(span);
-
-      setTimeout(() => {
-        span.style.transform = 'scale(1.2)';
+      sorted.forEach((num, index) => {
         setTimeout(() => {
-          span.style.transform = 'scale(1)';
-        }, 200);
-      }, 50);
-
-      index++;
-      setTimeout(showNext, 600);
+          const div = document.createElement('div');
+          div.className = 'ball';
+          div.textContent = num;
+          div.style.animationDelay = `0s`;
+          container.appendChild(div);
+          sound.currentTime = 0;
+          sound.play();
+        }, index * 400); // 0.4초 간격
+      });
     }
-    showNext();
-  }
-
-  drawBtn.addEventListener('click', () => {
-    const lottoNums = generateLottoNumbers();
-    animateNumbers(lottoNums);
-  });
-</script>
-
+  </script>
 </body>
 </html>
